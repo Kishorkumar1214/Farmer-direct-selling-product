@@ -1,0 +1,434 @@
+<?php
+include "config.php";
+include "header.php";
+?>
+<div class="ser-grid-list img_style">
+<h3 class="style"><a href="">LOG IN</a></h3>
+<div class="contact-form">
+<form method="post" action="" name="buyer_login">
+<div>
+<span><label>USERNAME</label></span>
+<span><input name="username" type="text" class="textbox"></span>
+</div>
+<div>
+<span><label>PASSWORD</label></span>
+<span><input name="password" type="password" class="textbox"></span>
+</div>
+<div>
+<span><input type="submit" value="login" name="login" ></span>
+</div>
+<?php
+if(isset($_POST['login']))
+{
+$username=mysql_real_escape_string($_POST['username']);
+$password=mysql_real_escape_string($_POST['password']);
+$login_qry="SELECT * FROM buyer WHERE busername='$username' and bpassword='$password'";
+$result=mysql_query($login_qry)or die("cant access");
+$count=mysql_num_rows($result);
+if($count>0){
+//header("location:buyer.php");
+$n=mysql_fetch_array($result);
+$_SESSION['bid']=$n['bid'];
+echo "<script type='text/javascript'>alert('Buyer Logged in successful');</script>";
+echo '<meta http-equiv="refresh" content="0;url=buyer_profile.php">';
+}
+else{
+echo "<script type='text/javascript'>alert('Buyer account username or  password incorrect!');</script>";
+}
+?>
+<?php
+include "config.php";
+include "header.php";
+?>
+<div class="wrap">
+<div class="wrapper">
+<div class="main">
+<div class="content">
+<a href="index.php"><h2>Agro Farm</h2></a>
+</div>
+<div class="ser-main">
+<div class="ser-grid-list img_style">
+<h3 class="style"><a href="">Add  Product</a></h3>
+<div class="contact-form">
+<form method="POST" action="" name="add_product" enctype="multipart/form-data">
+<div>
+<span><label>Category</label></span>
+<span><input name="cat" type="text" class="textbox"></span>
+</div>
+<div>
+<span><label>Product name</label></span>
+<span><input name="pname" type="text" class="textbox"></span>
+</div>
+<div>
+<span><label>Product Description</label></span>
+<span><input name="pdescp" type="text" class="textbox"></span>
+</div>
+<div>
+<span><label>Product name</label></span>
+<span><input name="pname" type="text" class="textbox"></span>
+</div>
+<div>
+<span><label>Product image</label></span>
+<span><input name="pimg" type="file" class="textbox"></span>
+</div>
+<div>
+<span><label>Price</label></span>
+<span><input name="price" type="text" class="textbox"></span>
+</div>
+<div>
+<span><label>Quantity</label></span>
+<span><input name="qty" type="text" class="textbox"></span>
+</div>
+<div>
+<span><input type="submit" value="Add Product" name="submit" ></span>
+</div>
+</form>
+</div>
+<div class="clear"></div>
+</div>
+</div>
+<div class="clear"></div>
+</div>
+</div>
+<?php
+if(isset($_POST['submit']))
+{
+$pimage=$_FILES['pimg']['name'];
+$pname=mysql_real_escape_string($_POST['pname']);
+$cat=$_POST['cat'];
+$pdescp=mysql_real_escape_string($_POST['pdescp']);
+$price=$_POST['price'];
+$qty=$_POST['qty'];
+$sid=$_SESSION['sid'];
+mysql_query("insert into product(pname,pdescp,cat,price,qty,pimage,sid)values('$pname','$pdescp','$cat','$price','$qty','$pimage','$sid')")or die(mysql_error());
+move_uploaded_file($_FILES['pimg']['tmp_name'],"upload/$pimage");
+echo "<script type='text/javascript'>alert('Product added Successfull');</script>";
+echo '<meta http-equiv="refresh" content="0;url=add_products.php">';
+}
+include "footer.php";
+?>
+<?php
+include "config.php";
+include "header.php";
+?>
+<div class="wrap">
+<div class="wrapper">
+<div class="main">
+<div class="content">
+<a href="index.php"><h2>Agro Farm</h2></a>
+</div>
+<h3 class="style"><a href="">Buyer</a></h3>
+<div class="specials-grids">
+<table align="left" cellpadding="20" cellspacing="0" border="1"  class="cart_table">
+<tr><td>Buyer</td><td>Mobile No</td><td>Address</td><td>Pin</td><td>District</td><td>Product</td><td>Action</td</tr>
+<?php
+$t=mysql_query("select * from buyer");
+while($j=mysql_fetch_array($t))
+{
+$bid=$j['bid'];
+$username=$j['busername'];
+$mobileno=$j['mobileno'];
+$address=$j['address'];
+$pinno=$j['pinno'];
+$dist=$j['dist'];
+$productdetails=$j['productdetails'];
+echo "<tr><td>$username</td><td>$mobileno</td><td>$address</td><td>$pinno</td><td>$dist</td><td>$productdetails</td><td><a href='admindashboard.php?bid=$bid'>Delete</a></td></tr>";
+}
+?>
+</table>
+<?php
+if($_GET['bid']!='')
+{
+$bid=$_GET['bid'];
+mysql_query("delete from buyer where bid='$bid'");
+echo "<script type='text/javascript'>alert('Buyer account deleted successfully');</script>";
+echo '<meta http-equiv="refresh" content="0;url=admindashboard.php">';
+}
+include "footer.php";
+?>
+<?php
+include "config.php";
+include "header.php";
+?>
+<div class="wrap">
+<div class="wrapper">
+<div class="main">
+<div class="content">
+<a href="index.php"><h2>Agro Farm</h2></a>
+</div>
+<h3 class="style"><a href="">View Order</a></h3>
+<div class="specials-grids">
+<table align="left" cellpadding="20" cellspacing="0" border="1"  class="cart_table">
+<tr><td>Product image</td><td>Product name</td><td>Product Description</td><td>Price</td><td>Qty</td><td>Total Price</td><td>Order date</td></tr>
+<?php
+$stid=$_SESSION['bid'];
+$t=mysql_query("select * from cart where stid=$stid");
+while($w=mysql_fetch_array($t))
+{
+$pid=$w['pid'];
+$status=$w['status'];
+$qty=$w['qty'];
+$date=$w['date'];
+$u=mysql_query("select * from product where pid=$pid");
+while($y=mysql_fetch_array($u))
+{
+$pimage=$y['pimage'];
+$pname=$y['pname'];
+$pdescp=$y['pdescp'];
+$price=$y['price'];
+?>
+<?php
+$tot=($qty*$price);
+echo "<tr><td><img src='upload/$pimage' height='50px' /></td><td>$pname</td><td>$pdescp</td><td>$price</td><td>$qty</td><td>$tot</td><td>$date</td></tr>";
+?>
+<?php
+}
+}
+?>
+</table>
+<?php
+include "footer.php";
+?>
+<?php
+include "config.php";
+include "header.php";
+?>
+<div class="wrap">
+<div class="wrapper">
+<div class="main">
+<div class="content">
+<a href="index.php"><h2>Agro Farm</h2></a>
+</div>
+<div class="ser-main">
+<div class="ser-grid-list img_style">
+<h3 class="style"><a href="">SELLER REGISTRATION</a></h3>
+<div class="contact-form">
+<form method="POST" action="" name="buyer_register">
+<div>
+<span><label>USERNAME</label></span>
+<span><input name="username" type="text" class="textbox"></span>
+</div>
+<div>
+<span><label>PASSWORD</label></span>
+<span><input name="password" type="password" class="textbox"></span>
+</div>
+<div>
+<span><label>DATE</label></span>
+<span><input name="date" type="text" class="textbox"></span>
+</div>
+<div>
+<span><label>MOBILE NO</label></span>
+<span><input name="mobileno" type="text" class="textbox"></span>
+</div>
+<div>
+<span><label>LOCATION</label></span>
+<span><input name="address" type="text" class="textbox"></span>
+</div>
+<div>
+<span><label>PIN CODE</label></span>
+<span><input name="pinno" type="text" class="textbox"></span>
+</div>
+<div>
+<span><label>DIST</label></span>
+<span><input name="dist" type="text" class="textbox"></span>
+</div>
+</div>
+<div>
+<span><input type="submit" value="Register" name="register" ></span>
+</div>
+</form>
+</div>
+</div>
+<div class="clear"></div>
+</div>
+</div>
+<div class="clear"></div>
+</div>
+</div>
+<?php
+if(isset($_POST['register']))
+{
+$username=mysql_real_escape_string($_POST['username']);
+$password=mysql_real_escape_string($_POST['password']);
+$date=mysql_real_escape_string($_POST['date']);
+$mobileno=mysql_real_escape_string($_POST['mobileno']);
+$address=mysql_real_escape_string($_POST['address']);
+$pinno=mysql_real_escape_string($_POST['pinno']);
+$dist=mysql_real_escape_string($_POST['dist']);
+$productdetails=mysql_real_escape_string($_POST['productdetails']);
+mysql_query("insert into seller(susername,spassword,date,mobileno,address,pinno,dist,productdetails)
+values('$username','$password','$date','$mobileno','$address','$pinno','$dist','$productdetails')");
+echo "<script type='text/javascript'>alert('Seller account registered successfully');</script>";
+echo '<meta http-equiv="refresh" content="0;url=seller_login.php">';
+}
+include "footer.php";
+?>
+<?php
+include "config.php";
+include "header.php";
+?>
+<div class="wrap">
+<div class="wrapper">
+<div class="main">
+<div class="content">
+<a href="index.php"><h2>Agro Farm</h2></a>
+</div>
+<h3 class="style"><a href="">Customer Invoice</a></h3>
+<div class="specials-grids">
+<table align="left" cellpadding="20" cellspacing="0" border="1"  class="cart_table">
+<tr><td>Customer Details</td><td>Product image</td><td>Product name</td><td>Product Description</td><td>Price</td><td>Quantity</td><td>Total Price</td><td>Order date</td><td>Delete</td></tr>
+<?php
+$t=mysql_query("select * from cart");
+while($w=mysql_fetch_array($t))
+{
+$bid=$w['stid'];
+$cid=$w['cid'];
+$pid=$w['pid'];
+$qty=$w['qty'];
+$date=$w['date'];
+$sid=$_SESSION['sid'];
+if($sid!='')
+{
+$u=mysql_query("select * from product where pid=$pid and sid='$sid'");
+}
+else
+{
+$u=mysql_query("select * from product where pid=$pid");
+}
+$_SESSION['m']=$m=mysql_num_rows($u);
+while($y=mysql_fetch_array($u))
+{
+$pimage=$y['pimage'];
+$pname=$y['pname'];
+$pdescp=$y['pdescp'];
+$price=$y['price'];
+?>
+<?php
+$tot=($qty*$price);
+$i=mysql_query("select * from buyer where bid=$bid");
+while($j=mysql_fetch_array($i))
+{
+$username=$j['busername'];
+$mobileno=$j['mobileno'];
+$address=$j['address'];
+$pinno=$j['pinno'];
+$dist=$j['dist'];
+if($m!=0)
+{
+echo "<tr><td>Username:$username <br/>Mobileno:$mobileno<br/>Address:$address<br/>Pinno:$pinno<br/>Dist:$dist<br/>Product:$productdetails<br/></td><td><img src='upload/$pimage' height='50px' /></td><td>$pname</td><td>$pdescp</td><td>$price</td><td>$qty</td><td>$tot</td><td>$date</td><td><a href='invoice.php?cid=$cid'>Delete</a></td></tr>";
+}
+if($m==0)
+{
+echo "<tr><td colspan='8'>No invoice available $m</td></tr>";
+}
+?>
+<?php
+}
+}
+}
+?>
+</table>
+<div class="clear"> </div>
+</div>
+<div class="clear"></div>
+</div>
+<div class="clear"></div>
+</div>
+</div>
+<?php
+if($_GET['cid']!='')
+{
+$cid=$_GET['cid'];
+mysql_query("delete from cart where cid='$cid'");
+echo "<script type='text/javascript'>alert('Invoice deleted successfully');</script>";
+echo '<meta http-equiv="refresh" content="0;url=invoice.php">';
+}
+include "footer.php";
+?>
+<?php
+include "config.php";
+include "header.php";
+?>
+<div class="wrap">
+<div class="wrapper">
+<div class="main">
+<div class="content">
+</div>
+<h3 class="style"><a href="">Seller</a></h3>
+<div class="specials-grids">
+<table align="left" cellpadding="20" cellspacing="0" border="1"  class="cart_table">
+<tr><td>Seller</td><td>Mobile No</td><td>Address</td><td>Pin</td><td>District</td><td>Date</td><td>Action</td></tr>
+<?php
+$t=mysql_query("select * from seller");
+while($j=mysql_fetch_array($t))
+{
+$sid=$j['sid'];
+$username=$j['susername'];
+$mobileno=$j['mobileno'];
+$address=$j['address'];
+$pinno=$j['pinno'];
+$dist=$j['dist'];
+$date=$j['date'];
+echo "<tr><td>$username</td><td>$mobileno</td><td>$address</td><td>$pinno</td><td>$dist</td><td>$date</td><td><a href='view_seller.php?sid=$sid'>Delete</a></td></tr>";
+}
+?>
+</table>
+<div class="clear"> </div>
+</div>
+</div>
+<div class="clear"></div>
+</div>
+</div>
+<?php
+if($_GET['sid']!='')
+{
+$sid=$_GET['sid'];
+mysql_query("delete from seller where sid='$sid'");
+echo "<script type='text/javascript'>alert('Seller account deleted successfully');</script>";
+echo '<meta http-equiv="refresh" content="0;url=view_seller.php">';
+}
+?>
+<?php
+include "config.php";
+include "header.php";
+?>
+<div class="wrap">
+<div class="wrapper">
+<div class="main">
+<div class="content">
+</div>
+<h3 class="style"><a href="">Shop Product</a></h3>
+<div class="specials-grids">
+<?php
+$t=mysql_query("select * from product");
+while($w=mysql_fetch_array($t))
+{
+$pimage=$w['pimage'];
+$pname=$w['pname'];
+$pdescp=$w['pdescp'];
+$price=$w['price'];
+$qty=$w['qty'];
+$cat=$w['cat'];
+$subcat=$w['subcat'];
+$pid=$w['pid'];
+?>
+<div class="special-grid">
+<div class="gallery img_style">
+<img src="upload/<?php echo $pimage; ?>"
+title="<?php echo $pimage; ?>"></a>
+</div>
+<h3 class="style"><a href="#"><?php echo $pname; ?></a></h3>
+p><?php echo $pdescp; ?></p><br />
+?>
+</table>
+<div class="clear"> </div>
+</div>
+<div class="clear"></div>
+</div>
+<div class="clear"></div>
+</div>
+</div>
+
+
+
+
